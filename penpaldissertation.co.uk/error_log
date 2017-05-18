@@ -1,0 +1,15 @@
+[27-Mar-2017 13:11:52 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/index.php on line 35
+[01-Apr-2017 17:00:07 UTC] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in /home/markwatt/public_html/penpaldissertation.co.uk/puzzlegame.php on line 103
+[10-Apr-2017 23:28:55 UTC] PHP Fatal error:  Function name must be a string in /home/markwatt/public_html/penpaldissertation.co.uk/draggame.php on line 155
+[14-Apr-2017 20:47:17 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 198
+[14-Apr-2017 20:48:50 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 198
+[14-Apr-2017 20:50:43 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 212
+[14-Apr-2017 20:51:11 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 212
+[14-Apr-2017 20:52:15 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 209
+[14-Apr-2017 20:52:18 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 209
+[14-Apr-2017 20:53:15 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 209
+[14-Apr-2017 20:53:19 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 209
+[14-Apr-2017 20:57:34 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 248
+[14-Apr-2017 20:57:44 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 248
+[14-Apr-2017 20:58:07 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 248
+[14-Apr-2017 21:03:44 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /home/markwatt/public_html/penpaldissertation.co.uk/lineGraph.php on line 248

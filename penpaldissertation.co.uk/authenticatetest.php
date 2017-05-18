@@ -8,31 +8,30 @@ $dbusername = "markwatt";
 $dbpassword = "Urn9nm8t";
 $table = "penpalstore";
 
-//login vars
+//login variables
 $username = $_POST['username'];
 $password = $_POST['pwd'];
 $hash = crypt($password, base64_encode($password));
 $verificationCode = md5(uniqid("yourrandomstringyouwanttoaddhere", true));
-//$salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
-//$salt = base64_encode($salt);
-//$salt = str_replace('+', '.', $salt);
-//$hash = crypt($password, '$2y$10$'.$salt.'$');
+$nativeLang = $_POST['nativeL'];
 
 
-//register var (+ login vars)
-$confirmpwd = $_POST['confirmpwd'];//$confirmpwd2 = crypt($confirmpwd, base64_encode($confirmpwd));
-//update password vars
+//register variables (+ login vars)
+$confirmpwd = $_POST['confirmpwd'];
+
+//update password variables
 $oldpwd = $_POST['oldpwd'];
 $oldpwdH = crypt($oldpwd, base64_encode($oldpwd));
-
 $newpwd = $_POST['newpwd'];
 $newhash = crypt($newpwd, base64_encode($newpwd));
-
-
-$confirmnewpwd = $_POST['newconfirmpwd'];//$confirmnewpwd == crypt($confirmnewpwd, base64_encode($confirmnewpwd));
+$confirmnewpwd = $_POST['newconfirmpwd'];
 $passwordResetFlag = $_POST['passwordResetFlag'];
+
+$English = "English";
+$German = "German";
 $usernameCookie = $_SESSION["username"];
 setcookie("verificationCode", $verificationCode);
+
 
 // Create connection
 $conn = new mysqli($servername, $dbusername, $dbpassword, $database);
@@ -42,17 +41,20 @@ if ($conn->connect_error) {
 	die("Connection failed: " . $conn->connect_error);
 } 
 
-//Self explanatory Queries
-$authQuery = "SELECT id, username, status FROM penpalstore where `username` = '$username' AND `password` = '$hash'";
+//Database interactions
+$authQuery = "SELECT id, username, status, nativeLang, Reported FROM penpalstore where `username` = '$username' AND `password` = '$hash'";
 $checkforusernameQuery = "SELECT username FROM penpalstore where `username` = '$username'";
-$addUserQuery = "INSERT INTO penpalstore (`username`, `password`, `verification_code`) VALUES ('$username', '$hash', '$verificationCode' )";
+$addUserQuery = "INSERT INTO penpalstore (`username`, `password`, `verification_code`,`nativeLang`) VALUES ('$username', '$hash', '$verificationCode', '$nativeLang' )";
 $getOldPasswordQuery = "SELECT password FROM penpalstore where `username` = '$usernameCookie'";
 $updatePasswordQuery = "UPDATE penpalstore SET password='$newhash' WHERE `username`='$usernameCookie'";
+$updatetimeStampQuery = "INSERT INTO timeStamp (`username`) VALUES ('$username')";
+
 
 if(!$confirmnewpwd){
-//If page isn't passed a confirm password it is a log in request
+//If auth doesnt recieve a confirm password post with posted data, it is a log in request
 	if(!$confirmpwd){
 		$response = $conn->query($authQuery);
+		
 	}
 //Register Request
 	else {
@@ -63,12 +65,14 @@ if(!$confirmnewpwd){
 		else {
 		//adds new user to db
 			$conn->query($addUserQuery);
+		
 		//attempts log in
 		$errors = '';
 $myemail = 'support@penpal.co.uk';
 if(empty($_POST['username'])  ||
    empty($_POST['pwd']) ||
    empty($_POST['confirmpwd']))
+  //Native Langauge will be English by Default if not changed
 {
     $errors .= "\n Error: all fields are required";
 }
@@ -77,7 +81,7 @@ $email_address = $_POST['username'];
 $message = $_POST['message'];
 
 if( empty($errors))
-{
+{//Email the activation email to the posted username
 $verificationLink = "http://www.penpaldissertation.co.uk/activate.php?code=" . $verificationCode;
 	$to = $email_address;
     $email_subject = "Activation email: $name";
@@ -93,40 +97,64 @@ $verificationLink = "http://www.penpaldissertation.co.uk/activate.php?code=" . $
 else {
     echo $errors;
 }
-		//	$response = $conn->query($authQuery);
-			//	echo "<meta http-equiv=\"refresh\" content=\"0;http://www.scoutlive.co.uk/firsttimelogin.php\">";
+		
 		}
 	
 	}
-//if log in is successful set cookie for userid, redirect to profile.
+	 
+//check constraints to allow login.
 if ($response->num_rows > 0){
 		if($result = $response->fetch_assoc()){
+		
 			$userid = $result["id"];
 			$username = $result["username"];
             $statusactive = $result["status"];
-			//check if user is active
-			if ($statusactive === "active"){
-				$_SESSION["username"] = $username;
-			$_SESSION["userid"] = $userid;
-			echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/home.php\">";
-			}
-		/*	setcookie("userid", $userid, time() + (86400/24), "/", "scoutlive.co.uk");
-			setcookie("username", $username, time() + (86400/24), "/", "scoutlive.co.uk");*/
-else{
+			$langcheck = $result["nativeLang"];
+		    $isReported = $result[ "Reported"];
+		//1. check if user is reported
+		if($isReported !== "1"){
+		
+			//2. check if user is active & english
+			if ($statusactive === "active" && $langcheck === "English" ){
+				
+		
+	     	$conn->query($updatetimeStampQuery);	
+			$_SESSION["username"] = $username;
+		    echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/home.php\">";
+		
+	}
+			//3. check if user is active & german
 			
-
-		//	echo password_hash('password', PASSWORD_MCRYPT);
-			echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/index.html\">";
+		else if($statusactive === "active" && $langcheck === "German" ){
+			
+		$conn->query($updatetimeStampQuery);
+			setcookie("nativeLang", $German, time() + (86400 * 30), "/");
+			$_SESSION["username"] = $username;
+            echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/home.php\">";
+			
+		}
+		//Other wise if they are reported, notify them
+		}else if ($isReported === "1"){
+			
+			 echo "<script type='text/javascript'>alert('You have been flagged as innaproptiate, contact a member of our team')</script>";
+			 	echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/index.php\">";
+		}
+			//Display error for non active account
+else{
+		
+			echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/index.php\">";
 			
  echo "<script type='text/javascript'>alert('You need to activate your account')</script>";
 
 		}
 		}
-	}
+		}
 	
-//if log in fails, direct back to log in screen - Needs to post something back, so we can use the post to display error message.
+
+	
+//if log in fails, direct back to log in screen and dislay error
 	else if(empty($_SESSION['username']))  {
-echo "<meta http-equiv=\"refresh\" content=\"0;http://www.scoutlive.co.uk/login.php\">";
+echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/login.php\">";
 
 	 echo "<script type='text/javascript'>alert('Incorrect Username or Password')</script>";
 
@@ -141,9 +169,9 @@ else {
 			//Old password Matches
 			if($oldpwdH === $result["password"]){
 				$conn->query($updatePasswordQuery);
-			//	header("location: http://www.scoutlive.co.uk/profile.php");
+			
 $errors = '';
-$myemail = 'support@scoutlive.co.uk';
+$myemail = 'support@penpaldissertation.co.uk';
 if(empty($_POST['oldpwd'])  ||
    empty($_POST['newpwd']) ||
    empty($_POST['newconfirmpwd']))
@@ -155,28 +183,25 @@ $email_address = $_SESSION["username"];
 $message = $_POST['message'];
 
 if( empty($errors))
-{
+{ //Email that password has been changed
     $actual_link = "http://$_SERVER[HTTP_HOST]"."firsttimelogin.php?id=" . $_SESSION["username"];
 	$to = $email_address;
     $email_subject = "Password change notification: $name";
-    $email_body = "Your Scout password has just been changed, If this was not you please contact our support team immediately";
-        
-     //   "Email: $email_address";
+    $email_body = "Your PenPal password has just been changed, If this was not you please contact our support team immediately";
     $headers = "From: $myemail\n";
     $headers .= "Reply-To: $email_address";
     mail($to,$email_subject,$email_body,$headers);
-    //redirect to the 'thank you' page
-    header('Location:  http://www.scoutlive.co.uk/profile.php');
+echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/login.php\">";
 }
 else {
     echo $errors;
-}//NEED TO SEND POSITIVE RESPONSE BACK
+}
 			}
-			//Old password doesn't match
+			//If Old password doesn't match
 			else{
 				
-				echo "<meta http-equiv=\"refresh\" content=\"0;http://www.scoutlive.co.uk/newpassword.php\">";
-				//NEED TO SEND NEGATIVE RESPONSE
+				echo "<meta http-equiv=\"refresh\" content=\"0;http://www.penpaldissertation.co.uk/newpassword.php\">";
+				//error message 
            echo "<script type='text/javascript'>alert('Incorrect Password combination')</script>";
 ;			}
 		}
